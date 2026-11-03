@@ -38,6 +38,10 @@ function toUserMessage(error: unknown): string {
   if (isAuthError(error) && error.code === 'anonymous_provider_disabled') {
     return 'Guest sign-in is turned off for this Supabase project. Enable anonymous sign-ins in the Supabase dashboard, then try again.'
   }
+  // Supabase limits how many new guests one network can create per hour.
+  if (isAuthError(error) && (error.code === 'over_request_rate_limit' || error.status === 429)) {
+    return 'Too many new guest sessions were started from this network recently. Please wait a few minutes, then try again.'
+  }
   return 'We could not start your guest session. Check your connection and try again.'
 }
 

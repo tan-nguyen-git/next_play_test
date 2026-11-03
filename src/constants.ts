@@ -8,9 +8,9 @@ export interface ColumnConfig {
 
 // The single source of truth for which columns exist and their order.
 export const COLUMNS: readonly ColumnConfig[] = [
-  { status: 'todo', label: 'To Do', accent: '#8a94a6' },
-  { status: 'in_progress', label: 'In Progress', accent: '#4f6bed' },
-  { status: 'in_review', label: 'In Review', accent: '#b7791f' },
+  { status: 'todo', label: 'To Do', accent: '#9b6dd6' },
+  { status: 'in_progress', label: 'In Progress', accent: '#d9a11e' },
+  { status: 'in_review', label: 'In Review', accent: '#3b82f6' },
   { status: 'done', label: 'Done', accent: '#2f9e6b' },
 ]
 

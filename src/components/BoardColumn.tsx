@@ -3,6 +3,7 @@ import type { CSSProperties } from 'react'
 import type { ColumnConfig } from '../constants'
 import type { Task, TaskStatus } from '../types/task'
 import { columnDropId } from '../utils/dragIds'
+import { InboxIcon, PlusIcon } from './Icons'
 import { DraggableTaskCard } from './TaskCard'
 
 interface BoardColumnProps {
@@ -33,10 +34,12 @@ function BoardColumn({ column, tasks, filtering, today, pendingIds, onAddTask, o
       style={accentStyle}
     >
       <header className="board-column__header">
-        <span className="board-column__dot" aria-hidden="true" />
-        <h2 id={headingId} className="board-column__title">
-          {column.label}
-        </h2>
+        <div className="column-pill">
+          <span className="column-pill__dot" aria-hidden="true" />
+          <h2 id={headingId} className="board-column__title">
+            {column.label}
+          </h2>
+        </div>
         <span className="board-column__count">
           {tasks.length}
           <span className="visually-hidden"> {tasks.length === 1 ? 'task' : 'tasks'}</span>
@@ -53,6 +56,7 @@ function BoardColumn({ column, tasks, filtering, today, pendingIds, onAddTask, o
 
       {tasks.length === 0 ? (
         <div className="board-column__empty">
+          <InboxIcon size={20} />
           <p>{filtering ? 'No matching tasks' : 'No tasks here yet'}</p>
         </div>
       ) : (
@@ -70,6 +74,11 @@ function BoardColumn({ column, tasks, filtering, today, pendingIds, onAddTask, o
           ))}
         </ul>
       )}
+
+      <button type="button" className="column-add" onClick={() => onAddTask(column.status)}>
+        <PlusIcon size={14} /> New task
+        <span className="visually-hidden"> in {column.label}</span>
+      </button>
     </section>
   )
 }

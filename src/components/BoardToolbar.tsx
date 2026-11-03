@@ -2,6 +2,7 @@ import { useId, useRef } from 'react'
 import { PRIORITY_LABELS, TASK_PRIORITIES } from '../constants'
 import { hasActiveFilters, NO_FILTERS, type TaskFilters } from '../utils/filterTasks'
 import { isTaskPriority } from '../utils/taskValidation'
+import { SearchIcon } from './Icons'
 
 interface BoardToolbarProps {
   filters: TaskFilters
@@ -21,10 +22,11 @@ function BoardToolbar({ filters, onChange }: BoardToolbarProps) {
         <label htmlFor={`${id}-search`} className="visually-hidden">
           Search tasks by title
         </label>
+        <SearchIcon />
         <input
           ref={searchRef}
           id={`${id}-search`}
-          className="input"
+          className="input input--with-icon"
           type="search"
           placeholder="Search by title…"
           value={filters.query}

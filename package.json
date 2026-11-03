@@ -1,13 +1,17 @@
 {
   "name": "kanban-task-board",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "test": "node --test tests/",
+    "verify:rls": "node --env-file-if-exists=.env.local scripts/verify-rls.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

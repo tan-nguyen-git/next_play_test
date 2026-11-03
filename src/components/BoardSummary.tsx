@@ -5,11 +5,13 @@ interface BoardSummaryProps {
 }
 
 function BoardSummary({ counts }: BoardSummaryProps) {
+  const percent = counts.total === 0 ? 0 : Math.round((counts.completed / counts.total) * 100)
+
   return (
     <section className="board-summary" aria-labelledby="board-summary-heading">
-      <h2 id="board-summary-heading" className="board-summary__label">
+      <p id="board-summary-heading" className="board-summary__label">
         Whole board
-      </h2>
+      </p>
       <dl className="board-summary__stats">
         <div className="stat">
           <dt>Total</dt>
@@ -24,6 +26,12 @@ function BoardSummary({ counts }: BoardSummaryProps) {
           <dd>{counts.overdue}</dd>
         </div>
       </dl>
+      <div className="board-summary__progress" title={`${percent}% of tasks completed`}>
+        <span className="progress" aria-hidden="true">
+          <span className="progress__fill" style={{ width: `${percent}%` }} />
+        </span>
+        <span className="board-summary__percent">{percent}% done</span>
+      </div>
     </section>
   )
 }

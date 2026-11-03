@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import Board from './components/Board'
+import BoardSkeleton from './components/BoardSkeleton'
 import BoardSummary from './components/BoardSummary'
 import BoardToolbar from './components/BoardToolbar'
+import { LogoMark } from './components/Icons'
 import StatusScreen from './components/StatusScreen'
 import TaskForm from './components/TaskForm'
 import { COLUMNS } from './constants'
@@ -21,8 +23,12 @@ function App() {
     <div className="app">
       <header className="app-header">
         <div className="app-header__brand">
-          <span className="app-header__logo" aria-hidden="true" />
+          <LogoMark size={28} />
           <h1 className="app-header__title">Task Board</h1>
+          <span className="app-header__divider" aria-hidden="true">
+            /
+          </span>
+          <span className="app-header__workspace">Guest workspace</span>
         </div>
       </header>
       <main className="app-main">
@@ -158,7 +164,7 @@ function TaskWorkspace({ client, userId }: TaskWorkspaceProps) {
   }
 
   if (loadState.status === 'loading') {
-    return <StatusScreen tone="loading" title="Loading your board" message="Fetching your saved tasks…" />
+    return <BoardSkeleton />
   }
 
   if (loadState.status === 'error') {
@@ -175,8 +181,15 @@ function TaskWorkspace({ client, userId }: TaskWorkspaceProps) {
 
   return (
     <>
-      <div className="workspace-toolbar">
+      <div className="page-head">
+        <div>
+          <h2 className="page-head__title">My board</h2>
+          <p className="page-head__subtitle">Plan, track, and finish your work.</p>
+        </div>
         <BoardSummary counts={summarizeTasks(tasks, today)} />
+      </div>
+      <div className="workspace-toolbar">
+        <BoardToolbar filters={filters} onChange={handleFiltersChange} />
         <button
           id={NEW_TASK_BUTTON_ID}
           type="button"
@@ -186,7 +199,6 @@ function TaskWorkspace({ client, userId }: TaskWorkspaceProps) {
           <span aria-hidden="true">+</span> New task
         </button>
       </div>
-      <BoardToolbar filters={filters} onChange={handleFiltersChange} />
       {filtering && tasks.length > 0 && (
         <p className="filter-status" role="status">
           Showing {visibleTasks.length} of {tasks.length} {tasks.length === 1 ? 'task' : 'tasks'}. Column counts show

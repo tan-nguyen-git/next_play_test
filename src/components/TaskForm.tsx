@@ -12,6 +12,7 @@ import {
   type TaskFormValues,
 } from '../utils/taskValidation'
 import DeleteConfirmation from './DeleteConfirmation'
+import { CalendarIcon, PriorityIcon, StatusIcon } from './Icons'
 import Modal from './Modal'
 
 interface TaskFormProps {
@@ -106,15 +107,16 @@ function TaskForm({ task, initialStatus = 'todo', onSubmit, onCancel, onDelete }
   return (
     <Modal title={task ? 'Edit task' : 'New task'} onRequestClose={saving || deleting ? undefined : onCancel}>
       <form className="task-form" onSubmit={handleSubmit} noValidate>
-        <div className="field">
-          <label htmlFor={ids.title} className="field__label">
-            Title <span className="field__required">(required)</span>
+        <div className="field field--title">
+          <label htmlFor={ids.title} className="visually-hidden">
+            Title (required)
           </label>
           <input
             ref={titleRef}
             id={ids.title}
-            className="input"
+            className="input input--title"
             type="text"
+            placeholder="Task title"
             value={values.title}
             onChange={(event) => updateField('title', event.target.value)}
             aria-invalid={errors.title ? true : undefined}
@@ -137,6 +139,74 @@ function TaskForm({ task, initialStatus = 'todo', onSubmit, onCancel, onDelete }
           </div>
         </div>
 
+        {/* Property rows, label on the left and value on the right. */}
+        <div className="properties">
+          <div className="property">
+            <label htmlFor={ids.status} className="property__label" data-status={values.status}>
+              <StatusIcon status={values.status} />
+              Status
+            </label>
+            <select
+              id={ids.status}
+              className="input input--property"
+              value={values.status}
+              onChange={(event) => {
+                if (isTaskStatus(event.target.value)) updateField('status', event.target.value)
+              }}
+            >
+              {COLUMNS.map((column) => (
+                <option key={column.status} value={column.status}>
+                  {column.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="property">
+            <label htmlFor={ids.priority} className="property__label">
+              <PriorityIcon level={values.priority} />
+              Priority
+            </label>
+            <select
+              id={ids.priority}
+              className="input input--property"
+              value={values.priority}
+              onChange={(event) => {
+                if (isTaskPriority(event.target.value)) updateField('priority', event.target.value)
+              }}
+            >
+              {TASK_PRIORITIES.map((priority) => (
+                <option key={priority} value={priority}>
+                  {PRIORITY_LABELS[priority]}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="property">
+            <label htmlFor={ids.dueDate} className="property__label">
+              <CalendarIcon />
+              Due date
+            </label>
+            <div className="property__value">
+              <input
+                id={ids.dueDate}
+                className="input input--property"
+                type="date"
+                value={values.dueDate}
+                onChange={(event) => updateField('dueDate', event.target.value)}
+                aria-invalid={errors.dueDate ? true : undefined}
+                aria-describedby={errors.dueDate ? ids.dueDateError : undefined}
+              />
+              {errors.dueDate && (
+                <p id={ids.dueDateError} className="field__error">
+                  {errors.dueDate}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+
         <div className="field">
           <label htmlFor={ids.description} className="field__label">
             Description
@@ -146,6 +216,7 @@ function TaskForm({ task, initialStatus = 'todo', onSubmit, onCancel, onDelete }
             id={ids.description}
             className="input input--textarea"
             rows={4}
+            placeholder="Add more detail…"
             value={values.description}
             onChange={(event) => updateField('description', event.target.value)}
             aria-invalid={errors.description ? true : undefined}
@@ -165,68 +236,6 @@ function TaskForm({ task, initialStatus = 'todo', onSubmit, onCancel, onDelete }
             >
               {values.description.length}/{DESCRIPTION_MAX_LENGTH}
             </p>
-          </div>
-        </div>
-
-        <div className="task-form__row">
-          <div className="field">
-            <label htmlFor={ids.status} className="field__label">
-              Status
-            </label>
-            <select
-              id={ids.status}
-              className="input"
-              value={values.status}
-              onChange={(event) => {
-                if (isTaskStatus(event.target.value)) updateField('status', event.target.value)
-              }}
-            >
-              {COLUMNS.map((column) => (
-                <option key={column.status} value={column.status}>
-                  {column.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="field">
-            <label htmlFor={ids.priority} className="field__label">
-              Priority
-            </label>
-            <select
-              id={ids.priority}
-              className="input"
-              value={values.priority}
-              onChange={(event) => {
-                if (isTaskPriority(event.target.value)) updateField('priority', event.target.value)
-              }}
-            >
-              {TASK_PRIORITIES.map((priority) => (
-                <option key={priority} value={priority}>
-                  {PRIORITY_LABELS[priority]}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="field">
-            <label htmlFor={ids.dueDate} className="field__label">
-              Due date
-            </label>
-            <input
-              id={ids.dueDate}
-              className="input"
-              type="date"
-              value={values.dueDate}
-              onChange={(event) => updateField('dueDate', event.target.value)}
-              aria-invalid={errors.dueDate ? true : undefined}
-              aria-describedby={errors.dueDate ? ids.dueDateError : undefined}
-            />
-            {errors.dueDate && (
-              <p id={ids.dueDateError} className="field__error">
-                {errors.dueDate}
-              </p>
-            )}
           </div>
         </div>
 

@@ -1,7 +1,8 @@
 import {
   DndContext,
   DragOverlay,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   type Announcements,
@@ -27,6 +28,17 @@ interface BoardProps {
   onDropTask: (task: Task, status: TaskStatus) => void
 }
 
+// Releasing a drag over the card it started on would count as a click and open
+// the task. Swallow that single click; normal clicks are unaffected.
+function suppressNextClick() {
+  const swallow = (event: MouseEvent) => {
+    event.stopPropagation()
+    event.preventDefault()
+  }
+  window.addEventListener('click', swallow, { capture: true, once: true })
+  window.setTimeout(() => window.removeEventListener('click', swallow, { capture: true }), 0)
+}
+
 function columnLabel(status: TaskStatus | null) {
   return COLUMNS.find((column) => column.status === status)?.label ?? 'no column'
 }
@@ -35,9 +47,12 @@ function Board({ tasks, filtering, today, pendingIds, onAddTask, onOpenTask, onS
   const [activeTaskId, setActiveTaskId] = useState<string | null>(null)
   const activeTask = activeTaskId ? tasks.find((task) => task.id === activeTaskId) : undefined
 
-  // A drag only starts after the pointer moves 4px, so a plain click or tap
-  // on the handle never counts as a drag.
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }))
+  // Mouse: a drag starts after moving 4px, so a plain click still opens the card.
+  // Touch: press and hold briefly first, so a quick swipe still scrolls the board.
+  const sensors = useSensors(
+    useSensor(MouseSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 220, tolerance: 6 } }),
+  )
 
   const findTask = (dragId: string | number) => {
     const taskId = parseTaskDragId(dragId)
@@ -60,6 +75,7 @@ function Board({ tasks, filtering, today, pendingIds, onAddTask, onOpenTask, onS
 
   function handleDragEnd({ active, over }: DragEndEvent) {
     setActiveTaskId(null)
+    suppressNextClick()
     // Only columns are drop targets, so `over` is always a column (or null
     // when dropped outside). Validate both sides against current data.
     const task = findTask(active.id)
@@ -74,7 +90,10 @@ function Board({ tasks, filtering, today, pendingIds, onAddTask, onOpenTask, onS
       accessibility={{ announcements }}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
-      onDragCancel={() => setActiveTaskId(null)}
+      onDragCancel={() => {
+        setActiveTaskId(null)
+        suppressNextClick()
+      }}
     >
       <div className="board">
         {COLUMNS.map((column) => (
