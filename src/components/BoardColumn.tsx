@@ -1,7 +1,9 @@
+import { useDroppable } from '@dnd-kit/core'
 import type { CSSProperties } from 'react'
 import type { ColumnConfig } from '../constants'
 import type { Task, TaskStatus } from '../types/task'
-import TaskCard from './TaskCard'
+import { columnDropId } from '../utils/dragIds'
+import { DraggableTaskCard } from './TaskCard'
 
 interface BoardColumnProps {
   column: ColumnConfig
@@ -14,13 +16,20 @@ interface BoardColumnProps {
 
 function BoardColumn({ column, tasks, pendingIds, onAddTask, onOpenTask, onStatusChange }: BoardColumnProps) {
   const headingId = `column-${column.status}-heading`
+  // The whole column (header, cards, and empty area) is one drop target.
+  const { setNodeRef, isOver } = useDroppable({ id: columnDropId(column.status) })
   // Exposes the column's accent color to CSS as a custom property.
   const accentStyle: CSSProperties & Record<'--column-accent', string> = {
     '--column-accent': column.accent,
   }
 
   return (
-    <section className="board-column" aria-labelledby={headingId} style={accentStyle}>
+    <section
+      ref={setNodeRef}
+      className={`board-column${isOver ? ' board-column--over' : ''}`}
+      aria-labelledby={headingId}
+      style={accentStyle}
+    >
       <header className="board-column__header">
         <span className="board-column__dot" aria-hidden="true" />
         <h2 id={headingId} className="board-column__title">
@@ -48,7 +57,7 @@ function BoardColumn({ column, tasks, pendingIds, onAddTask, onOpenTask, onStatu
         <ul className="board-column__list">
           {tasks.map((task) => (
             <li key={task.id}>
-              <TaskCard
+              <DraggableTaskCard
                 task={task}
                 pending={pendingIds.has(task.id)}
                 onOpen={onOpenTask}

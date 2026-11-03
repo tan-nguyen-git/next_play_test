@@ -105,14 +105,16 @@ function TaskWorkspace({ client, userId }: TaskWorkspaceProps) {
     setFormState(null)
   }
 
-  async function handleStatusChange(task: Task, status: TaskStatus) {
+  // Used by both the status selector and drag-and-drop. Only the selector
+  // (keyboard-friendly) keeps focus on the card after it moves column.
+  async function handleStatusChange(task: Task, status: TaskStatus, keepFocus = true) {
     setActionError(null)
-    focusAfterRenderRef.current = statusSelectId(task.id)
+    if (keepFocus) focusAfterRenderRef.current = statusSelectId(task.id)
     try {
       await changeStatus(task.id, task.status, status)
     } catch (error) {
       if (import.meta.env.DEV) console.error('Changing status failed:', error)
-      focusAfterRenderRef.current = statusSelectId(task.id)
+      if (keepFocus) focusAfterRenderRef.current = statusSelectId(task.id)
       setActionError(
         describeTaskError(
           error,
@@ -172,6 +174,7 @@ function TaskWorkspace({ client, userId }: TaskWorkspaceProps) {
         onAddTask={(status) => setFormState({ mode: 'create', status })}
         onOpenTask={(taskId) => setFormState({ mode: 'edit', taskId })}
         onStatusChange={handleStatusChange}
+        onDropTask={(task, status) => handleStatusChange(task, status, false)}
       />
       {formState?.mode === 'create' && (
         <TaskForm initialStatus={formState.status} onSubmit={handleCreate} onCancel={() => setFormState(null)} />
