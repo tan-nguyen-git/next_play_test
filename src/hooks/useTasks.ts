@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { TaskBusyError, createTask, listTasks, updateTask } from '../services/tasks'
+import { TaskBusyError, createTask, deleteTask, listTasks, updateTask } from '../services/tasks'
 import type { Task, TaskInput, TaskStatus } from '../types/task'
 
 export type TasksLoadState =
@@ -116,5 +116,16 @@ export function useTasks(client: SupabaseClient, userId: string) {
     [client, userId, runExclusive, replaceTask],
   )
 
-  return { tasks, loadState, retry, pendingIds, addTask, saveTask, changeStatus }
+  // Not optimistic: the card is removed only after the database confirms, so a
+  // failed delete never makes a task disappear.
+  const removeTask = useCallback(
+    (taskId: string) =>
+      runExclusive(taskId, async () => {
+        await deleteTask(client, userId, taskId)
+        setTasks((current) => current.filter((task) => task.id !== taskId))
+      }),
+    [client, userId, runExclusive],
+  )
+
+  return { tasks, loadState, retry, pendingIds, addTask, saveTask, changeStatus, removeTask }
 }

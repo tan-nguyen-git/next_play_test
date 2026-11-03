@@ -11,6 +11,7 @@ import {
   type TaskFormErrors,
   type TaskFormValues,
 } from '../utils/taskValidation'
+import DeleteConfirmation from './DeleteConfirmation'
 import Modal from './Modal'
 
 interface TaskFormProps {
@@ -20,9 +21,11 @@ interface TaskFormProps {
   // Resolves when the task is saved; rejects to keep the form open with an error.
   onSubmit: (input: TaskInput) => Promise<void>
   onCancel: () => void
+  // Edit mode only. Resolves after the database confirms the delete.
+  onDelete?: () => Promise<void>
 }
 
-function TaskForm({ task, initialStatus = 'todo', onSubmit, onCancel }: TaskFormProps) {
+function TaskForm({ task, initialStatus = 'todo', onSubmit, onCancel, onDelete }: TaskFormProps) {
   // Controlled inputs: React state is the single source of each field's value.
   // The initializer runs only on mount, so the parent gives each task its own
   // `key` to get a fresh form when switching tasks.
@@ -44,6 +47,9 @@ function TaskForm({ task, initialStatus = 'todo', onSubmit, onCancel }: TaskForm
   const savingRef = useRef(false)
   const titleRef = useRef<HTMLInputElement>(null)
   const descriptionRef = useRef<HTMLTextAreaElement>(null)
+  const deleteButtonRef = useRef<HTMLButtonElement>(null)
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const fieldId = useId()
 
   function updateField<K extends keyof TaskFormValues>(key: K, value: TaskFormValues[K]) {
@@ -55,7 +61,8 @@ function TaskForm({ task, initialStatus = 'todo', onSubmit, onCancel }: TaskForm
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     // Stop the browser's default full-page form submission.
     event.preventDefault()
-    if (savingRef.current) return
+    // Pressing Enter in a field must not save while a delete is being confirmed.
+    if (savingRef.current || confirmingDelete) return
 
     const result = validateTaskForm(values)
     if (!result.ok) {
@@ -97,7 +104,7 @@ function TaskForm({ task, initialStatus = 'todo', onSubmit, onCancel }: TaskForm
   }
 
   return (
-    <Modal title={task ? 'Edit task' : 'New task'} onRequestClose={saving ? undefined : onCancel}>
+    <Modal title={task ? 'Edit task' : 'New task'} onRequestClose={saving || deleting ? undefined : onCancel}>
       <form className="task-form" onSubmit={handleSubmit} noValidate>
         <div className="field">
           <label htmlFor={ids.title} className="field__label">
@@ -229,14 +236,38 @@ function TaskForm({ task, initialStatus = 'todo', onSubmit, onCancel }: TaskForm
           </p>
         )}
 
-        <div className="task-form__actions">
-          <button type="button" className="button button--secondary" onClick={onCancel} disabled={saving}>
-            Cancel
-          </button>
-          <button type="submit" className="button button--primary" aria-disabled={saving}>
-            {saving ? 'Saving…' : task ? 'Save changes' : 'Create task'}
-          </button>
-        </div>
+        {task && onDelete && confirmingDelete ? (
+          <DeleteConfirmation
+            taskTitle={task.title}
+            onConfirm={onDelete}
+            onCancel={() => {
+              setConfirmingDelete(false)
+              // Return focus to the Delete button after the panel disappears.
+              requestAnimationFrame(() => deleteButtonRef.current?.focus())
+            }}
+            onBusyChange={setDeleting}
+          />
+        ) : (
+          <div className="task-form__actions">
+            {task && onDelete && (
+              <button
+                ref={deleteButtonRef}
+                type="button"
+                className="button button--danger-quiet task-form__delete"
+                onClick={() => setConfirmingDelete(true)}
+                disabled={saving}
+              >
+                Delete
+              </button>
+            )}
+            <button type="button" className="button button--secondary" onClick={onCancel} disabled={saving}>
+              Cancel
+            </button>
+            <button type="submit" className="button button--primary" aria-disabled={saving}>
+              {saving ? 'Saving…' : task ? 'Save changes' : 'Create task'}
+            </button>
+          </div>
+        )}
       </form>
     </Modal>
   )

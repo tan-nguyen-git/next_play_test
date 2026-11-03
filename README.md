@@ -39,7 +39,7 @@ Status key: ⬜ pending · 🟡 implemented, pending review · ✅ approved
 | 6 | Create tasks | ✅ approved |
 | 7 | Edit tasks and status selector | ✅ approved |
 | 8 | Drag tasks across columns | ✅ approved |
-| 9 | Delete tasks | ⬜ |
+| 9 | Delete tasks | ✅ approved |
 | 10 | Due-date indicators and summary | ⬜ |
 | 11 | Search and priority filter | ⬜ |
 | 12 | Usability and responsive polish | ⬜ |
@@ -59,6 +59,7 @@ Status key: ⬜ pending · 🟡 implemented, pending review · ✅ approved
 | 6 | ~45 min | Modal, TaskForm, shared validation, createTask service, browser tests |
 | 7 | ~50 min | updateTask, edit mode, optimistic status selector with rollback, pending guard |
 | 8 | ~45 min | @dnd-kit/core 6.3.1, drop targets, drag handle, overlay, mouse + touch tests |
+| 9 | ~30 min | deleteTask with zero-row check, inline confirmation, focus + announcement; larger drag handle target |
 
 ## Open issues
 

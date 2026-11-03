@@ -73,13 +73,17 @@ interface TaskWorkspaceProps {
   userId: string
 }
 
+const NEW_TASK_BUTTON_ID = 'new-task-button'
+
 type FormState = { mode: 'create'; status: TaskStatus } | { mode: 'edit'; taskId: string } | null
 
 // Only rendered once a guest exists, so tasks are never requested without a session.
 function TaskWorkspace({ client, userId }: TaskWorkspaceProps) {
-  const { tasks, loadState, retry, pendingIds, addTask, saveTask, changeStatus } = useTasks(client, userId)
+  const { tasks, loadState, retry, pendingIds, addTask, saveTask, changeStatus, removeTask } = useTasks(client, userId)
   const [formState, setFormState] = useState<FormState>(null)
   const [actionError, setActionError] = useState<string | null>(null)
+  // Polite screen reader message for actions with no other visible confirmation.
+  const [announcement, setAnnouncement] = useState('')
   // When a card moves column React remounts it, so focus would be lost.
   // This remembers which element to focus after the next render.
   const focusAfterRenderRef = useRef<string | null>(null)
@@ -107,6 +111,14 @@ function TaskWorkspace({ client, userId }: TaskWorkspaceProps) {
 
   // Used by both the status selector and drag-and-drop. Only the selector
   // (keyboard-friendly) keeps focus on the card after it moves column.
+  async function handleDelete(task: Task) {
+    await removeTask(task.id)
+    // The card is gone, so send focus somewhere stable.
+    focusAfterRenderRef.current = NEW_TASK_BUTTON_ID
+    setAnnouncement(`Deleted “${task.title}”.`)
+    setFormState(null)
+  }
+
   async function handleStatusChange(task: Task, status: TaskStatus, keepFocus = true) {
     setActionError(null)
     if (keepFocus) focusAfterRenderRef.current = statusSelectId(task.id)
@@ -147,6 +159,7 @@ function TaskWorkspace({ client, userId }: TaskWorkspaceProps) {
           Guest <code>{userId.slice(0, 8)}</code>
         </p>
         <button
+          id={NEW_TASK_BUTTON_ID}
           type="button"
           className="button button--primary"
           onClick={() => setFormState({ mode: 'create', status: 'todo' })}
@@ -154,6 +167,9 @@ function TaskWorkspace({ client, userId }: TaskWorkspaceProps) {
           <span aria-hidden="true">+</span> New task
         </button>
       </div>
+      <p className="visually-hidden" role="status">
+        {announcement}
+      </p>
       {actionError && (
         <div className="action-error" role="alert">
           <p>{actionError}</p>
@@ -185,6 +201,7 @@ function TaskWorkspace({ client, userId }: TaskWorkspaceProps) {
           key={editingTask.id}
           task={editingTask}
           onSubmit={(input) => handleEdit(editingTask.id, input)}
+          onDelete={() => handleDelete(editingTask)}
           onCancel={() => {
             // Explicit, because some browsers (Safari) don't focus a button on click.
             focusAfterRenderRef.current = openButtonId(editingTask.id)

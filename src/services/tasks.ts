@@ -138,3 +138,17 @@ export async function updateTask(
   if (!data) throw new TaskNotFoundError()
   return parseTask(data)
 }
+
+// Deletes one task. Asking for the deleted row back is how we confirm that a
+// row was actually removed; zero rows means nothing matched.
+export async function deleteTask(client: SupabaseClient, userId: string, taskId: string): Promise<void> {
+  const { data, error } = await client
+    .from('tasks')
+    .delete()
+    .eq('id', taskId)
+    .eq('user_id', userId)
+    .select('id')
+
+  if (error) throw error
+  if (data.length === 0) throw new TaskNotFoundError()
+}

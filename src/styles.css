@@ -204,6 +204,48 @@ p {
   background: var(--color-bg);
 }
 
+/* Destructive actions use red and are visually separated from Save. */
+.button--danger {
+  color: #ffffff;
+  background: var(--color-priority-high-text);
+}
+
+.button--danger:hover {
+  background: #861e16;
+}
+
+.button--danger-quiet {
+  color: var(--color-priority-high-text);
+  background: transparent;
+  border-color: transparent;
+}
+
+.button--danger-quiet:hover {
+  background: var(--color-priority-high-bg);
+}
+
+.task-form__delete {
+  margin-right: auto;
+}
+
+.delete-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--color-priority-high-bg);
+  border: 1px solid #f4c7c3;
+  border-radius: var(--radius-md);
+}
+
+.delete-confirm__message {
+  font-size: var(--text-sm);
+}
+
+.delete-confirm .task-form__actions {
+  padding-top: 0;
+}
+
 .button:disabled,
 .button[aria-disabled='true'] {
   opacity: 0.6;
@@ -600,9 +642,10 @@ p {
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  width: 24px;
-  height: 28px;
-  margin: -4px -8px 0 0;
+  /* A generous target, so clicks near the dots grab the handle instead of opening the card. */
+  width: 32px;
+  height: 36px;
+  margin: -8px -12px -4px 0;
   color: var(--color-text-subtle);
   border-radius: var(--radius-sm);
   cursor: grab;
