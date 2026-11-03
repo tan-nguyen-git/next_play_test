@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import Board from './components/Board'
 import BoardSummary from './components/BoardSummary'
+import BoardToolbar from './components/BoardToolbar'
 import StatusScreen from './components/StatusScreen'
 import TaskForm from './components/TaskForm'
 import { COLUMNS } from './constants'
@@ -12,6 +13,7 @@ import { supabase, supabaseConfigError } from './lib/supabase'
 import { describeTaskError } from './services/tasks'
 import type { Task, TaskInput, TaskStatus } from './types/task'
 import { openButtonId, statusSelectId } from './utils/domIds'
+import { filterTasks, hasActiveFilters, matchesFilters, NO_FILTERS, type TaskFilters } from './utils/filterTasks'
 import { summarizeTasks } from './utils/taskStats'
 
 function App() {
@@ -88,6 +90,9 @@ function TaskWorkspace({ client, userId }: TaskWorkspaceProps) {
   const [actionError, setActionError] = useState<string | null>(null)
   // Polite screen reader message for actions with no other visible confirmation.
   const [announcement, setAnnouncement] = useState('')
+  const [filters, setFilters] = useState<TaskFilters>(NO_FILTERS)
+  // Shown when a newly created task is hidden by the active filters.
+  const [hiddenTaskNotice, setHiddenTaskNotice] = useState<string | null>(null)
   // When a card moves column React remounts it, so focus would be lost.
   // This remembers which element to focus after the next render.
   const focusAfterRenderRef = useRef<string | null>(null)
@@ -99,11 +104,23 @@ function TaskWorkspace({ client, userId }: TaskWorkspaceProps) {
     document.getElementById(id)?.focus()
   }, [tasks, formState])
 
+  // Looked up in the full list, so a task stays editable even if filters hide it.
   const editingTask = formState?.mode === 'edit' ? tasks.find((task) => task.id === formState.taskId) : undefined
+  const filtering = hasActiveFilters(filters)
+  // Derived from the one saved list on each change; never stored separately.
+  const visibleTasks = useMemo(() => filterTasks(tasks, filters), [tasks, filters])
+
+  function handleFiltersChange(next: TaskFilters) {
+    setFilters(next)
+    setHiddenTaskNotice(null)
+  }
 
   async function handleCreate(input: TaskInput) {
-    await addTask(input)
+    const created = await addTask(input)
     setFormState(null)
+    if (!matchesFilters(created, filters)) {
+      setHiddenTaskNotice(`“${created.title}” was saved but is hidden by the current filters.`)
+    }
   }
 
   async function handleEdit(taskId: string, input: TaskInput) {
@@ -113,8 +130,6 @@ function TaskWorkspace({ client, userId }: TaskWorkspaceProps) {
     setFormState(null)
   }
 
-  // Used by both the status selector and drag-and-drop. Only the selector
-  // (keyboard-friendly) keeps focus on the card after it moves column.
   async function handleDelete(task: Task) {
     await removeTask(task.id)
     // The card is gone, so send focus somewhere stable.
@@ -123,6 +138,8 @@ function TaskWorkspace({ client, userId }: TaskWorkspaceProps) {
     setFormState(null)
   }
 
+  // Used by both the status selector and drag-and-drop. Only the selector
+  // (keyboard-friendly) keeps focus on the card after it moves column.
   async function handleStatusChange(task: Task, status: TaskStatus, keepFocus = true) {
     setActionError(null)
     if (keepFocus) focusAfterRenderRef.current = statusSelectId(task.id)
@@ -174,6 +191,13 @@ function TaskWorkspace({ client, userId }: TaskWorkspaceProps) {
           <span aria-hidden="true">+</span> New task
         </button>
       </div>
+      <BoardToolbar filters={filters} onChange={handleFiltersChange} />
+      {filtering && tasks.length > 0 && (
+        <p className="filter-status" role="status">
+          Showing {visibleTasks.length} of {tasks.length} {tasks.length === 1 ? 'task' : 'tasks'}. Column counts show
+          matching tasks only.
+        </p>
+      )}
       <p className="visually-hidden" role="status">
         {announcement}
       </p>
@@ -185,14 +209,32 @@ function TaskWorkspace({ client, userId }: TaskWorkspaceProps) {
           </button>
         </div>
       )}
-      {tasks.length === 0 && (
+      {hiddenTaskNotice && (
+        <div className="board-notice board-notice--action">
+          <p>{hiddenTaskNotice}</p>
+          <button type="button" className="button button--secondary" onClick={() => handleFiltersChange(NO_FILTERS)}>
+            Clear filters
+          </button>
+        </div>
+      )}
+      {tasks.length === 0 ? (
         <p className="board-notice">
           Your board is empty. Use <strong>New task</strong> or a column’s <strong>+</strong> button to add your
           first task. Tasks are saved to this browser’s guest board.
         </p>
+      ) : (
+        visibleTasks.length === 0 && (
+          <div className="board-notice board-notice--action">
+            <p>No tasks match your search and filters. Your tasks are still saved.</p>
+            <button type="button" className="button button--secondary" onClick={() => handleFiltersChange(NO_FILTERS)}>
+              Clear filters
+            </button>
+          </div>
+        )
       )}
       <Board
-        tasks={tasks}
+        tasks={visibleTasks}
+        filtering={filtering}
         today={today}
         pendingIds={pendingIds}
         onAddTask={(status) => setFormState({ mode: 'create', status })}

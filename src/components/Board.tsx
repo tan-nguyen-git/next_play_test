@@ -16,7 +16,9 @@ import BoardColumn from './BoardColumn'
 import TaskCard from './TaskCard'
 
 interface BoardProps {
+  // The visible (possibly filtered) tasks.
   tasks: Task[]
+  filtering: boolean
   today: Date
   pendingIds: ReadonlySet<string>
   onAddTask: (status: TaskStatus) => void
@@ -29,7 +31,7 @@ function columnLabel(status: TaskStatus | null) {
   return COLUMNS.find((column) => column.status === status)?.label ?? 'no column'
 }
 
-function Board({ tasks, today, pendingIds, onAddTask, onOpenTask, onStatusChange, onDropTask }: BoardProps) {
+function Board({ tasks, filtering, today, pendingIds, onAddTask, onOpenTask, onStatusChange, onDropTask }: BoardProps) {
   const [activeTaskId, setActiveTaskId] = useState<string | null>(null)
   const activeTask = activeTaskId ? tasks.find((task) => task.id === activeTaskId) : undefined
 
@@ -81,6 +83,7 @@ function Board({ tasks, today, pendingIds, onAddTask, onOpenTask, onStatusChange
             column={column}
             // Derived from the one task list on every render; never stored separately.
             tasks={tasks.filter((task) => task.status === column.status)}
+            filtering={filtering}
             today={today}
             pendingIds={pendingIds}
             onAddTask={onAddTask}

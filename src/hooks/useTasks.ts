@@ -79,9 +79,10 @@ export function useTasks(client: SupabaseClient, userId: string) {
   // Saves first, then adds the row the database returned. Throws on failure
   // so the form can keep the user's input and show an error.
   const addTask = useCallback(
-    async (input: TaskInput) => {
+    async (input: TaskInput): Promise<Task> => {
       const created = await createTask(client, userId, input)
       setTasks((current) => [...current, created])
+      return created
     },
     [client, userId],
   )

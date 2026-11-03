@@ -42,7 +42,7 @@ Status key: ⬜ pending · 🟡 implemented, pending review · ✅ approved
 | 8 | Drag tasks across columns | ✅ approved |
 | 9 | Delete tasks | ✅ approved |
 | 10 | Due-date indicators and summary | ✅ approved |
-| 11 | Search and priority filter | ⬜ |
+| 11 | Search and priority filter | ✅ approved |
 | 12 | Usability and responsive polish | ⬜ |
 | 13 | Verify functionality and isolation | ⬜ |
 | 14 | GitHub and hosting | ⬜ |
@@ -62,6 +62,7 @@ Status key: ⬜ pending · 🟡 implemented, pending review · ✅ approved
 | 8 | ~45 min | @dnd-kit/core 6.3.1, drop targets, drag handle, overlay, mouse + touch tests |
 | 9 | ~30 min | deleteTask with zero-row check, inline confirmation, focus + announcement; larger drag handle target |
 | 10 | ~40 min | calendar-day due states, midnight refresh, badges, whole-board summary, 11 node:test tests; narrow-layout overflow fix |
+| 11 | ~30 min | derived filtering, toolbar, visible vs whole-board counts, no-match and hidden-task notices |
 
 ## Open issues
 
