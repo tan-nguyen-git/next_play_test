@@ -145,6 +145,6 @@ Built in small, reviewed steps.
 | 12 | Usability and responsive polish | ✅ |
 | 13 | Verification and design pass | ✅ |
 | 14 | GitHub and hosting | ✅ |
-| 15 | Final assessment document | Not started |
+| 15 | Final assessment document | ✅ |
 
 Approximate time: about 8 hours across steps 1–13, including design iterations and verification.
