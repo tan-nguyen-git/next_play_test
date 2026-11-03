@@ -1,6 +1,7 @@
 import { useId, useRef, useState, type FormEvent } from 'react'
 import { COLUMNS, PRIORITY_LABELS, TASK_PRIORITIES } from '../constants'
-import type { TaskInput, TaskStatus } from '../types/task'
+import { describeTaskError } from '../services/tasks'
+import type { Task, TaskInput, TaskStatus } from '../types/task'
 import {
   DESCRIPTION_MAX_LENGTH,
   TITLE_MAX_LENGTH,
@@ -13,21 +14,29 @@ import {
 import Modal from './Modal'
 
 interface TaskFormProps {
-  initialStatus: TaskStatus
+  // Edit mode when a task is given; create mode otherwise.
+  task?: Task
+  initialStatus?: TaskStatus
   // Resolves when the task is saved; rejects to keep the form open with an error.
   onSubmit: (input: TaskInput) => Promise<void>
   onCancel: () => void
 }
 
-function TaskForm({ initialStatus, onSubmit, onCancel }: TaskFormProps) {
+function TaskForm({ task, initialStatus = 'todo', onSubmit, onCancel }: TaskFormProps) {
   // Controlled inputs: React state is the single source of each field's value.
-  const [values, setValues] = useState<TaskFormValues>({
-    title: '',
-    description: '',
-    status: initialStatus,
-    priority: 'normal',
-    dueDate: '',
-  })
+  // The initializer runs only on mount, so the parent gives each task its own
+  // `key` to get a fresh form when switching tasks.
+  const [values, setValues] = useState<TaskFormValues>(() =>
+    task
+      ? {
+          title: task.title,
+          description: task.description,
+          status: task.status,
+          priority: task.priority,
+          dueDate: task.due_date ?? '',
+        }
+      : { title: '', description: '', status: initialStatus, priority: 'normal', dueDate: '' },
+  )
   const [errors, setErrors] = useState<TaskFormErrors>({})
   const [saving, setSaving] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
@@ -64,7 +73,9 @@ function TaskForm({ initialStatus, onSubmit, onCancel }: TaskFormProps) {
       // On success the parent closes the modal, which unmounts and resets this form.
     } catch (error) {
       if (import.meta.env.DEV) console.error('Saving task failed:', error)
-      setSubmitError('We could not save this task. Your changes are still here, so you can try again.')
+      setSubmitError(
+        describeTaskError(error, 'We could not save this task. Your changes are still here, so you can try again.'),
+      )
     } finally {
       savingRef.current = false
       setSaving(false)
@@ -86,7 +97,7 @@ function TaskForm({ initialStatus, onSubmit, onCancel }: TaskFormProps) {
   }
 
   return (
-    <Modal title="New task" onRequestClose={saving ? undefined : onCancel}>
+    <Modal title={task ? 'Edit task' : 'New task'} onRequestClose={saving ? undefined : onCancel}>
       <form className="task-form" onSubmit={handleSubmit} noValidate>
         <div className="field">
           <label htmlFor={ids.title} className="field__label">
@@ -223,7 +234,7 @@ function TaskForm({ initialStatus, onSubmit, onCancel }: TaskFormProps) {
             Cancel
           </button>
           <button type="submit" className="button button--primary" aria-disabled={saving}>
-            {saving ? 'Saving…' : 'Create task'}
+            {saving ? 'Saving…' : task ? 'Save changes' : 'Create task'}
           </button>
         </div>
       </form>

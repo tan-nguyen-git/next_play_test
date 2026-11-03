@@ -6,10 +6,13 @@ import TaskCard from './TaskCard'
 interface BoardColumnProps {
   column: ColumnConfig
   tasks: Task[]
+  pendingIds: ReadonlySet<string>
   onAddTask: (status: TaskStatus) => void
+  onOpenTask: (taskId: string) => void
+  onStatusChange: (task: Task, status: TaskStatus) => void
 }
 
-function BoardColumn({ column, tasks, onAddTask }: BoardColumnProps) {
+function BoardColumn({ column, tasks, pendingIds, onAddTask, onOpenTask, onStatusChange }: BoardColumnProps) {
   const headingId = `column-${column.status}-heading`
   // Exposes the column's accent color to CSS as a custom property.
   const accentStyle: CSSProperties & Record<'--column-accent', string> = {
@@ -45,7 +48,12 @@ function BoardColumn({ column, tasks, onAddTask }: BoardColumnProps) {
         <ul className="board-column__list">
           {tasks.map((task) => (
             <li key={task.id}>
-              <TaskCard task={task} />
+              <TaskCard
+                task={task}
+                pending={pendingIds.has(task.id)}
+                onOpen={onOpenTask}
+                onStatusChange={onStatusChange}
+              />
             </li>
           ))}
         </ul>

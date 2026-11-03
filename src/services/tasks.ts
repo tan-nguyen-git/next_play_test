@@ -5,6 +5,33 @@ import { isTaskPriority, isTaskStatus } from '../utils/taskValidation'
 // Request exactly the columns the Task type describes.
 const TASK_COLUMNS = 'id, title, status, user_id, created_at, description, priority, due_date'
 
+// The request succeeded but matched no row: it was deleted, or RLS hid it.
+export class TaskNotFoundError extends Error {
+  constructor() {
+    super('No matching task was found.')
+    this.name = 'TaskNotFoundError'
+  }
+}
+
+// Another save for the same task is still in flight.
+export class TaskBusyError extends Error {
+  constructor() {
+    super('This task is already being saved.')
+    this.name = 'TaskBusyError'
+  }
+}
+
+// A user-facing message for a failed task mutation. Raw database errors stay in dev logs.
+export function describeTaskError(error: unknown, fallback: string): string {
+  if (error instanceof TaskNotFoundError) {
+    return 'This task no longer exists on your board. Refresh the page to see your latest tasks.'
+  }
+  if (error instanceof TaskBusyError) {
+    return 'This task is still saving another change. Wait a moment and try again.'
+  }
+  return fallback
+}
+
 // TypeScript types disappear at runtime, so check each row before trusting it.
 function parseTask(row: unknown): Task {
   if (typeof row !== 'object' || row === null) {
@@ -78,5 +105,36 @@ export async function createTask(client: SupabaseClient, userId: string, input: 
     .single()
 
   if (error) throw error
+  return parseTask(data)
+}
+
+// Only these fields can ever be changed; id, user_id, and created_at cannot.
+export type TaskChanges = Partial<TaskInput>
+
+// Updates one task and returns the stored row. Zero matched rows is a failure,
+// not a silent success.
+export async function updateTask(
+  client: SupabaseClient,
+  userId: string,
+  taskId: string,
+  changes: TaskChanges,
+): Promise<Task> {
+  const payload: TaskChanges = {}
+  if (changes.title !== undefined) payload.title = changes.title
+  if (changes.description !== undefined) payload.description = changes.description
+  if (changes.status !== undefined) payload.status = changes.status
+  if (changes.priority !== undefined) payload.priority = changes.priority
+  if (changes.due_date !== undefined) payload.due_date = changes.due_date
+
+  const { data, error } = await client
+    .from('tasks')
+    .update(payload)
+    .eq('id', taskId)
+    .eq('user_id', userId)
+    .select(TASK_COLUMNS)
+    .maybeSingle()
+
+  if (error) throw error
+  if (!data) throw new TaskNotFoundError()
   return parseTask(data)
 }
