@@ -114,28 +114,28 @@ function TaskCard({ task, today, pending, overlay = false, drag, onOpen, onStatu
             Saving…
           </span>
         )}
-      </div>
-      <div className="task-card__status">
-        <label htmlFor={overlay ? undefined : selectId} className="visually-hidden">
-          Status for {task.title}
-        </label>
-        <select
-          id={overlay ? undefined : selectId}
-          className="status-select"
-          value={task.status}
-          tabIndex={overlay ? -1 : undefined}
-          onChange={(event) => {
-            const next = event.target.value
-            // Ignored while saving; the controlled value snaps back to task.status.
-            if (!pending && isTaskStatus(next) && next !== task.status) onStatusChange(task, next)
-          }}
-        >
-          {COLUMNS.map((column) => (
-            <option key={column.status} value={column.status}>
-              {column.label}
-            </option>
-          ))}
-        </select>
+        <span className="task-card__status">
+          <label htmlFor={overlay ? undefined : selectId} className="visually-hidden">
+            Status for {task.title}
+          </label>
+          <select
+            id={overlay ? undefined : selectId}
+            className="status-select"
+            value={task.status}
+            tabIndex={overlay ? -1 : undefined}
+            onChange={(event) => {
+              const next = event.target.value
+              // Ignored while saving; the controlled value snaps back to task.status.
+              if (!pending && isTaskStatus(next) && next !== task.status) onStatusChange(task, next)
+            }}
+          >
+            {COLUMNS.map((column) => (
+              <option key={column.status} value={column.status}>
+                {column.label}
+              </option>
+            ))}
+          </select>
+        </span>
       </div>
     </article>
   )

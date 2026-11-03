@@ -176,12 +176,7 @@ function TaskWorkspace({ client, userId }: TaskWorkspaceProps) {
   return (
     <>
       <div className="workspace-toolbar">
-        <div className="workspace-toolbar__info">
-          <BoardSummary counts={summarizeTasks(tasks, today)} />
-          <p className="guest-badge">
-            Guest <code>{userId.slice(0, 8)}</code>
-          </p>
-        </div>
+        <BoardSummary counts={summarizeTasks(tasks, today)} />
         <button
           id={NEW_TASK_BUTTON_ID}
           type="button"
@@ -242,6 +237,15 @@ function TaskWorkspace({ client, userId }: TaskWorkspaceProps) {
         onStatusChange={handleStatusChange}
         onDropTask={(task, status) => handleStatusChange(task, status, false)}
       />
+      <footer className="guest-note">
+        <p>
+          <strong>Guest board.</strong> Your tasks are saved to your account on this browser. Clearing this site’s data
+          or closing a private window ends the guest session, and this board cannot be recovered.
+        </p>
+        <p className="guest-note__id">
+          Guest ID <code>{userId.slice(0, 8)}</code>
+        </p>
+      </footer>
       {formState?.mode === 'create' && (
         <TaskForm initialStatus={formState.status} onSubmit={handleCreate} onCancel={() => setFormState(null)} />
       )}

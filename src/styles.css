@@ -9,7 +9,7 @@
   --color-border: #dfe2e8;
   --color-text: #1d2129;
   --color-text-muted: #5a6270;
-  --color-text-subtle: #6b7382;
+  --color-text-subtle: #5f6776; /* ≥ 4.5:1 on every surface, including columns */
 
   /* Accent */
   --color-accent: #4f6bed;
@@ -144,14 +144,6 @@ p {
   margin-bottom: var(--space-4);
 }
 
-.workspace-toolbar__info {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2) var(--space-4);
-  min-width: 0;
-}
-
 /* ---------- Board summary ---------- */
 .board-summary {
   display: flex;
@@ -228,12 +220,24 @@ p {
   background: #fdf0d5;
 }
 
-.guest-badge {
+/* ---------- Guest note ---------- */
+.guest-note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-6);
+  max-width: 960px;
+  margin-top: var(--space-8);
   font-size: var(--text-xs);
   color: var(--color-text-muted);
 }
 
-.guest-badge code {
+.guest-note__id {
+  white-space: nowrap;
+}
+
+.guest-note code {
   padding: 1px var(--space-2);
   font-family: ui-monospace, 'SF Mono', Menlo, monospace;
   background: var(--color-surface);
@@ -412,6 +416,9 @@ p {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   box-shadow: 0 20px 48px rgb(16 24 40 / 22%);
+  /* Long forms scroll inside the dialog on short screens. */
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .modal::backdrop {
@@ -821,8 +828,7 @@ p {
 .task-card__status {
   position: relative;
   z-index: 1;
-  display: flex;
-  justify-content: flex-end;
+  margin-left: auto;
 }
 
 .status-select {
@@ -915,6 +921,29 @@ p {
   background: var(--color-priority-high-bg);
 }
 
+/* ---------- Touch screens: larger targets (at least ~36px) ---------- */
+@media (pointer: coarse) {
+  .icon-button--small {
+    width: 36px;
+    height: 36px;
+  }
+
+  .status-select {
+    min-height: 36px;
+    font-size: var(--text-sm);
+  }
+
+  .drag-handle {
+    width: 40px;
+    height: 40px;
+    margin: -10px -14px -6px 0;
+  }
+
+  .button {
+    min-height: 44px;
+  }
+}
+
 /* ---------- Narrow screens ---------- */
 @media (max-width: 640px) {
   :root {
@@ -944,7 +973,8 @@ p {
   .board-notice,
   .action-error,
   .board-toolbar,
-  .filter-status {
+  .filter-status,
+  .guest-note {
     margin-right: var(--space-4);
   }
 
