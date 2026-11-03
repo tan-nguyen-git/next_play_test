@@ -1,10 +1,9 @@
-import { useState } from 'react'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import Board from './components/Board'
 import StatusScreen from './components/StatusScreen'
 import { useGuestSession } from './hooks/useGuestSession'
+import { useTasks } from './hooks/useTasks'
 import { supabase, supabaseConfigError } from './lib/supabase'
-import type { Task } from './types/task'
 
 function App() {
   return (
@@ -37,8 +36,6 @@ interface GuestWorkspaceProps {
 // Gates the board behind a ready guest session. No task work happens before that.
 function GuestWorkspace({ client }: GuestWorkspaceProps) {
   const { session, retry } = useGuestSession(client)
-  // Canonical task list. Stays empty until Task 5 loads it from Supabase.
-  const [tasks] = useState<Task[]>([])
 
   if (session.status === 'loading') {
     return (
@@ -62,11 +59,44 @@ function GuestWorkspace({ client }: GuestWorkspaceProps) {
     )
   }
 
+  return <TaskWorkspace client={client} userId={session.userId} />
+}
+
+interface TaskWorkspaceProps {
+  client: SupabaseClient
+  userId: string
+}
+
+// Only rendered once a guest exists, so tasks are never requested without a session.
+function TaskWorkspace({ client, userId }: TaskWorkspaceProps) {
+  const { tasks, loadState, retry } = useTasks(client, userId)
+
+  if (loadState.status === 'loading') {
+    return <StatusScreen tone="loading" title="Loading your board" message="Fetching your saved tasks…" />
+  }
+
+  if (loadState.status === 'error') {
+    return (
+      <StatusScreen
+        tone="error"
+        title="Could not load your board"
+        message={loadState.message}
+        actionLabel="Try again"
+        onAction={retry}
+      />
+    )
+  }
+
   return (
     <>
       <p className="guest-badge">
-        Guest <code>{session.userId.slice(0, 8)}</code>
+        Guest <code>{userId.slice(0, 8)}</code>
       </p>
+      {tasks.length === 0 && (
+        <p className="board-notice" role="status">
+          Your board is empty. Tasks you create will be saved to this browser’s guest board.
+        </p>
+      )}
       <Board tasks={tasks} />
     </>
   )

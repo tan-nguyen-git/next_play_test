@@ -14,6 +14,8 @@ export const COLUMNS: readonly ColumnConfig[] = [
   { status: 'done', label: 'Done', accent: '#2f9e6b' },
 ]
 
+export const TASK_PRIORITIES: readonly TaskPriority[] = ['low', 'normal', 'high']
+
 export const PRIORITY_LABELS: Record<TaskPriority, string> = {
   low: 'Low',
   normal: 'Normal',
