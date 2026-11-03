@@ -8,13 +8,14 @@ import { DraggableTaskCard } from './TaskCard'
 interface BoardColumnProps {
   column: ColumnConfig
   tasks: Task[]
+  today: Date
   pendingIds: ReadonlySet<string>
   onAddTask: (status: TaskStatus) => void
   onOpenTask: (taskId: string) => void
   onStatusChange: (task: Task, status: TaskStatus) => void
 }
 
-function BoardColumn({ column, tasks, pendingIds, onAddTask, onOpenTask, onStatusChange }: BoardColumnProps) {
+function BoardColumn({ column, tasks, today, pendingIds, onAddTask, onOpenTask, onStatusChange }: BoardColumnProps) {
   const headingId = `column-${column.status}-heading`
   // The whole column (header, cards, and empty area) is one drop target.
   const { setNodeRef, isOver } = useDroppable({ id: columnDropId(column.status) })
@@ -59,6 +60,7 @@ function BoardColumn({ column, tasks, pendingIds, onAddTask, onOpenTask, onStatu
             <li key={task.id}>
               <DraggableTaskCard
                 task={task}
+                today={today}
                 pending={pendingIds.has(task.id)}
                 onOpen={onOpenTask}
                 onStatusChange={onStatusChange}

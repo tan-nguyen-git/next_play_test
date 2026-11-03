@@ -144,6 +144,90 @@ p {
   margin-bottom: var(--space-4);
 }
 
+.workspace-toolbar__info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+  min-width: 0;
+}
+
+/* ---------- Board summary ---------- */
+.board-summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.board-summary__label {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-text-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.board-summary__stats {
+  display: flex;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.stat {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+}
+
+.stat dt {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.stat dd {
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat--done dd {
+  color: #1f7a52;
+}
+
+.stat--overdue {
+  background: var(--color-priority-high-bg);
+  border-color: #f4c7c3;
+}
+
+.stat--overdue dd,
+.stat--overdue dt {
+  color: var(--color-priority-high-text);
+}
+
+/* ---------- Due badges ---------- */
+.due-badge {
+  padding: 2px var(--space-2);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+}
+
+.due-badge--overdue {
+  color: #ffffff;
+  background: var(--color-priority-high-text);
+}
+
+.due-badge--soon {
+  color: #7a4a06;
+  background: #fdf0d5;
+}
+
 .guest-badge {
   font-size: var(--text-xs);
   color: var(--color-text-muted);
@@ -181,6 +265,7 @@ p {
   font-weight: 600;
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
+  white-space: nowrap;
   cursor: pointer;
   transition: background-color var(--transition-fast);
 }
@@ -493,6 +578,9 @@ p {
 
 /* ---------- Board ---------- */
 .board {
+  /* Positioned, so absolutely positioned children (like screen-reader-only text)
+     are clipped by the board's scroll area instead of widening the page. */
+  position: relative;
   display: grid;
   grid-template-columns: repeat(4, minmax(var(--column-width), 1fr));
   gap: var(--space-4);
@@ -815,7 +903,20 @@ p {
   }
 
   .workspace-toolbar {
+    flex-wrap: wrap;
+    align-items: flex-start;
     padding-right: var(--space-4);
+  }
+
+  /* Banners keep the same right gutter as the toolbar. */
+  .board-notice,
+  .action-error {
+    margin-right: var(--space-4);
+  }
+
+  .board-summary {
+    flex-wrap: wrap;
+    gap: var(--space-2);
   }
 
   .task-form__row {

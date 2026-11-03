@@ -1,7 +1,7 @@
 import { useDraggable, type DraggableSyntheticListeners } from '@dnd-kit/core'
 import { COLUMNS, PRIORITY_LABELS } from '../constants'
 import type { Task, TaskStatus } from '../types/task'
-import { formatDueDate } from '../utils/date'
+import { formatDueDate, getDueState, type DueState } from '../utils/date'
 import { openButtonId, statusSelectId } from '../utils/domIds'
 import { taskDragId } from '../utils/dragIds'
 import { isTaskStatus } from '../utils/taskValidation'
@@ -13,8 +13,16 @@ interface DragBindings {
   isDragging: boolean
 }
 
+// Text labels, so urgency never depends on color alone.
+const DUE_BADGES: Partial<Record<DueState, { label: string; tone: 'overdue' | 'soon' }>> = {
+  overdue: { label: 'Overdue', tone: 'overdue' },
+  due_today: { label: 'Due today', tone: 'soon' },
+  due_tomorrow: { label: 'Due tomorrow', tone: 'soon' },
+}
+
 interface TaskCardProps {
   task: Task
+  today: Date
   pending: boolean
   // The floating copy shown while dragging: purely visual, not interactive.
   overlay?: boolean
@@ -36,8 +44,9 @@ export function DraggableTaskCard(props: DraggableTaskCardProps) {
   return <TaskCard {...props} drag={{ setNodeRef, setActivatorNodeRef, listeners, isDragging }} />
 }
 
-function TaskCard({ task, pending, overlay = false, drag, onOpen, onStatusChange }: TaskCardProps) {
+function TaskCard({ task, today, pending, overlay = false, drag, onOpen, onStatusChange }: TaskCardProps) {
   const dueLabel = task.due_date ? formatDueDate(task.due_date) : null
+  const dueBadge = DUE_BADGES[getDueState(task.due_date, task.status === 'done', today)]
   const selectId = statusSelectId(task.id)
 
   const className = [
@@ -94,6 +103,7 @@ function TaskCard({ task, pending, overlay = false, drag, onOpen, onStatusChange
           {PRIORITY_LABELS[task.priority]}
           <span className="visually-hidden"> priority</span>
         </span>
+        {dueBadge && <span className={`due-badge due-badge--${dueBadge.tone}`}>{dueBadge.label}</span>}
         {task.due_date && dueLabel && (
           <span className="task-card__due">
             Due <time dateTime={task.due_date}>{dueLabel}</time>

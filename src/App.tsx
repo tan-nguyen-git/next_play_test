@@ -1,15 +1,18 @@
 import { useEffect, useRef, useState } from 'react'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import Board from './components/Board'
+import BoardSummary from './components/BoardSummary'
 import StatusScreen from './components/StatusScreen'
 import TaskForm from './components/TaskForm'
 import { COLUMNS } from './constants'
 import { useGuestSession } from './hooks/useGuestSession'
 import { useTasks } from './hooks/useTasks'
+import { useToday } from './hooks/useToday'
 import { supabase, supabaseConfigError } from './lib/supabase'
 import { describeTaskError } from './services/tasks'
 import type { Task, TaskInput, TaskStatus } from './types/task'
 import { openButtonId, statusSelectId } from './utils/domIds'
+import { summarizeTasks } from './utils/taskStats'
 
 function App() {
   return (
@@ -81,6 +84,7 @@ type FormState = { mode: 'create'; status: TaskStatus } | { mode: 'edit'; taskId
 function TaskWorkspace({ client, userId }: TaskWorkspaceProps) {
   const { tasks, loadState, retry, pendingIds, addTask, saveTask, changeStatus, removeTask } = useTasks(client, userId)
   const [formState, setFormState] = useState<FormState>(null)
+  const today = useToday()
   const [actionError, setActionError] = useState<string | null>(null)
   // Polite screen reader message for actions with no other visible confirmation.
   const [announcement, setAnnouncement] = useState('')
@@ -155,9 +159,12 @@ function TaskWorkspace({ client, userId }: TaskWorkspaceProps) {
   return (
     <>
       <div className="workspace-toolbar">
-        <p className="guest-badge">
-          Guest <code>{userId.slice(0, 8)}</code>
-        </p>
+        <div className="workspace-toolbar__info">
+          <BoardSummary counts={summarizeTasks(tasks, today)} />
+          <p className="guest-badge">
+            Guest <code>{userId.slice(0, 8)}</code>
+          </p>
+        </div>
         <button
           id={NEW_TASK_BUTTON_ID}
           type="button"
@@ -186,6 +193,7 @@ function TaskWorkspace({ client, userId }: TaskWorkspaceProps) {
       )}
       <Board
         tasks={tasks}
+        today={today}
         pendingIds={pendingIds}
         onAddTask={(status) => setFormState({ mode: 'create', status })}
         onOpenTask={(taskId) => setFormState({ mode: 'edit', taskId })}

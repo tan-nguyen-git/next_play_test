@@ -17,6 +17,7 @@ import TaskCard from './TaskCard'
 
 interface BoardProps {
   tasks: Task[]
+  today: Date
   pendingIds: ReadonlySet<string>
   onAddTask: (status: TaskStatus) => void
   onOpenTask: (taskId: string) => void
@@ -28,7 +29,7 @@ function columnLabel(status: TaskStatus | null) {
   return COLUMNS.find((column) => column.status === status)?.label ?? 'no column'
 }
 
-function Board({ tasks, pendingIds, onAddTask, onOpenTask, onStatusChange, onDropTask }: BoardProps) {
+function Board({ tasks, today, pendingIds, onAddTask, onOpenTask, onStatusChange, onDropTask }: BoardProps) {
   const [activeTaskId, setActiveTaskId] = useState<string | null>(null)
   const activeTask = activeTaskId ? tasks.find((task) => task.id === activeTaskId) : undefined
 
@@ -80,6 +81,7 @@ function Board({ tasks, pendingIds, onAddTask, onOpenTask, onStatusChange, onDro
             column={column}
             // Derived from the one task list on every render; never stored separately.
             tasks={tasks.filter((task) => task.status === column.status)}
+            today={today}
             pendingIds={pendingIds}
             onAddTask={onAddTask}
             onOpenTask={onOpenTask}
@@ -90,7 +92,7 @@ function Board({ tasks, pendingIds, onAddTask, onOpenTask, onStatusChange, onDro
       {/* A floating copy follows the pointer, so it is never clipped by the scrolling board. */}
       <DragOverlay>
         {activeTask && (
-          <TaskCard task={activeTask} pending={false} overlay onOpen={() => {}} onStatusChange={() => {}} />
+          <TaskCard task={activeTask} today={today} pending={false} overlay onOpen={() => {}} onStatusChange={() => {}} />
         )}
       </DragOverlay>
     </DndContext>
