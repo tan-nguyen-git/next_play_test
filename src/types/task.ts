@@ -15,3 +15,14 @@ export interface Task {
   priority: TaskPriority
   due_date: string | null
 }
+
+// The fields a user may provide when creating or editing a task.
+// id, user_id, and created_at are deliberately absent: the database and
+// the current session decide those, never form input.
+export interface TaskInput {
+  title: string
+  description: string
+  status: TaskStatus
+  priority: TaskPriority
+  due_date: string | null
+}

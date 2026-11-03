@@ -36,7 +36,7 @@ Status key: ⬜ pending · 🟡 implemented, pending review · ✅ approved
 | 3 | SQL schema and RLS policies | ✅ approved (Supabase run confirmed by user) |
 | 4 | Supabase client and guest sessions | ✅ approved |
 | 5 | Load persisted board | ✅ approved |
-| 6 | Create tasks | ⬜ |
+| 6 | Create tasks | ✅ approved |
 | 7 | Edit tasks and status selector | ⬜ |
 | 8 | Drag tasks across columns | ⬜ |
 | 9 | Delete tasks | ⬜ |
@@ -56,6 +56,7 @@ Status key: ⬜ pending · 🟡 implemented, pending review · ✅ approved
 | 3 | ~20 min | schema.sql, verify.sql, setup docs |
 | 4 | ~30 min | supabase-js client, env validation, guest session hook, status screens |
 | 5 | ~25 min | listTasks service with runtime row checks, useTasks hook, load states |
+| 6 | ~45 min | Modal, TaskForm, shared validation, createTask service, browser tests |
 
 ## Open issues
 

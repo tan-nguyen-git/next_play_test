@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { useCallback, useEffect, useState } from 'react'
-import { listTasks } from '../services/tasks'
-import type { Task } from '../types/task'
+import { createTask, listTasks } from '../services/tasks'
+import type { Task, TaskInput } from '../types/task'
 
 export type TasksLoadState =
   | { status: 'loading' }
@@ -46,5 +46,15 @@ export function useTasks(client: SupabaseClient, userId: string) {
     setAttempt((count) => count + 1)
   }, [])
 
-  return { tasks, loadState, retry }
+  // Saves first, then adds the row the database returned. Throws on failure
+  // so the form can keep the user's input and show an error.
+  const addTask = useCallback(
+    async (input: TaskInput) => {
+      const created = await createTask(client, userId, input)
+      setTasks((current) => [...current, created])
+    },
+    [client, userId],
+  )
+
+  return { tasks, loadState, retry, addTask }
 }

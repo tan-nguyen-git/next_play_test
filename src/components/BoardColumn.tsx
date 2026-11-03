@@ -1,14 +1,15 @@
 import type { CSSProperties } from 'react'
 import type { ColumnConfig } from '../constants'
-import type { Task } from '../types/task'
+import type { Task, TaskStatus } from '../types/task'
 import TaskCard from './TaskCard'
 
 interface BoardColumnProps {
   column: ColumnConfig
   tasks: Task[]
+  onAddTask: (status: TaskStatus) => void
 }
 
-function BoardColumn({ column, tasks }: BoardColumnProps) {
+function BoardColumn({ column, tasks, onAddTask }: BoardColumnProps) {
   const headingId = `column-${column.status}-heading`
   // Exposes the column's accent color to CSS as a custom property.
   const accentStyle: CSSProperties & Record<'--column-accent', string> = {
@@ -26,6 +27,14 @@ function BoardColumn({ column, tasks }: BoardColumnProps) {
           {tasks.length}
           <span className="visually-hidden"> {tasks.length === 1 ? 'task' : 'tasks'}</span>
         </span>
+        <button
+          type="button"
+          className="icon-button icon-button--small"
+          aria-label={`Add task to ${column.label}`}
+          onClick={() => onAddTask(column.status)}
+        >
+          <span aria-hidden="true">+</span>
+        </button>
       </header>
 
       {tasks.length === 0 ? (

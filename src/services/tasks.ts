@@ -1,17 +1,9 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { COLUMNS, TASK_PRIORITIES } from '../constants'
-import type { Task, TaskPriority, TaskStatus } from '../types/task'
+import type { Task, TaskInput } from '../types/task'
+import { isTaskPriority, isTaskStatus } from '../utils/taskValidation'
 
 // Request exactly the columns the Task type describes.
 const TASK_COLUMNS = 'id, title, status, user_id, created_at, description, priority, due_date'
-
-function isTaskStatus(value: unknown): value is TaskStatus {
-  return COLUMNS.some((column) => column.status === value)
-}
-
-function isTaskPriority(value: unknown): value is TaskPriority {
-  return TASK_PRIORITIES.some((priority) => priority === value)
-}
 
 // TypeScript types disappear at runtime, so check each row before trusting it.
 function parseTask(row: unknown): Task {
@@ -66,4 +58,25 @@ export async function listTasks(client: SupabaseClient, userId: string): Promise
 
   if (error) throw error
   return data.map(parseTask)
+}
+
+// Inserts a task owned by userId and returns the stored row, including the
+// database-generated id and created_at. Fields are listed explicitly so no
+// UI-only or ownership-changing properties can slip into the request.
+export async function createTask(client: SupabaseClient, userId: string, input: TaskInput): Promise<Task> {
+  const { data, error } = await client
+    .from('tasks')
+    .insert({
+      user_id: userId,
+      title: input.title,
+      description: input.description,
+      status: input.status,
+      priority: input.priority,
+      due_date: input.due_date,
+    })
+    .select(TASK_COLUMNS)
+    .single()
+
+  if (error) throw error
+  return parseTask(data)
 }
