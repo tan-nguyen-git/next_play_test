@@ -7,6 +7,8 @@ Every **PASS** below was observed in a real run; nothing is marked as passing fr
 
 **Legend:** ✅ PASS · ❌ FAIL · ⏳ NOT RUN (reason given)
 
+**Live app:** https://next-play-test-seven.vercel.app (Vercel, built from the `main` branch)
+
 ## Summary
 
 | Area | Result |
@@ -16,7 +18,7 @@ Every **PASS** below was observed in a real run; nothing is marked as passing fr
 | Database isolation (RLS) | ✅ 24/24 checks (`npm run verify:rls`) |
 | Browser feature tests | ✅ 120/120 checks across 10 scenarios, each compared automatically with its expected value |
 | Accessibility audit | ✅ Text contrast ≥ 4.5:1 in all four app states (tinted column text measures 5.26–8.58:1); every control has a visible keyboard focus indicator |
-| Hosted deployment | ⏳ Task 14 |
+| Hosted deployment | ✅ https://next-play-test-seven.vercel.app: the same 120 browser checks pass against the live site; two-guest isolation confirmed; no browser errors |
 
 ## Verification matrix
 
@@ -49,7 +51,23 @@ Every **PASS** below was observed in a real run; nothing is marked as passing fr
 | Narrow viewport | Board and modal at phone width | Readable; nothing cut off | ✅ 500px wide: no sideways page scroll; modal scrolls inside itself on a 473px-tall screen. Real phone not tested by me |
 | Touch | Quick tap, quick swipe, press-and-hold then drag | Scroll vs. drag kept separate | ✅ Tap opens the card; a quick swipe scrolls the board without dragging; holding about 0.2 s then moving drags the card into the column highlighted at release; holding without moving does nothing |
 | Production build | `npm run build`, `npm run lint`, `npm test` | All pass | ✅ |
-| Hosted smoke test | Repeat create/drop/refresh on the live URL | Same as local | ⏳ Not run yet: deployment is Task 14 |
+| Hosted smoke test | Repeat create/drop/refresh on the live URL | Same as local | ✅ All 120 browser checks pass against the live site (create, failures, edit, drag, touch, delete, filters, due dates); a usable board appears about 1 s after a first visit |
+
+## Live deployment checks
+
+Run against https://next-play-test-seven.vercel.app on 2026-11-02, using two separate browser profiles (two different visitors).
+
+| Check | Result |
+| --- | --- |
+| Page, script, stylesheet, and icon load | ✅ HTTP 200; the deployed script is byte-for-byte the same build as a clean local `npm ci && npm run build` |
+| Configuration baked into the build | ✅ Supabase project URL and publishable key present; no secret key; the setup-error screen does not appear |
+| First visit | ✅ Guest created and board usable in about 1 s |
+| Guest A creates a task | ✅ Task appears on A's board |
+| Guest B in a separate profile | ✅ Different guest ID and an empty board; A's task is not visible, including after reload |
+| Refresh | ✅ A keeps the same guest ID and task; B keeps its own guest ID |
+| Browser console | ✅ No errors or exceptions in either profile |
+| Full browser suite against the live site | ✅ 120/120 checks match their expected values |
+| Database isolation (same Supabase project as the live site) | ✅ 24/24 (`npm run verify:rls`, re-run after deployment) |
 
 ## Database isolation (RLS)
 
@@ -102,4 +120,4 @@ The contrast audit had a similar blind spot: it could not read colors the browse
 - **Anonymous sign-in rate limit.** Supabase limits new anonymous sign-ins per IP address (about 30 per hour on the free tier). Automated testing hit this limit; the app now shows a specific "please wait a few minutes" message with a retry button. Normal use (one guest per browser) is unaffected.
 - **Test guests remain.** Every automated run creates anonymous users that stay in Authentication → Users; deleting them requires a privileged key, which this project deliberately never uses.
 - **Edge auto-scroll on phones.** At phone width only part of the next column is visible, so dropping into it means holding the card near the screen edge, which auto-scrolls the board. How far it scrolls depends on how long the card is held; the card always lands in the highlighted column. The status selector is the precise alternative.
-- **Not tested by me:** a physical phone, Safari, and Firefox. The hosted deployment is verified in Task 14.
+- **Not tested by me:** a physical phone, Safari, and Firefox.

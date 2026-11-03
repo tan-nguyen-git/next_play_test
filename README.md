@@ -1,5 +1,8 @@
 # Kanban Task Board
 
+**Live demo:** https://next-play-test-seven.vercel.app  
+**Repository:** https://github.com/tan-nguyen-git/next_play_test
+
 A polished Kanban board where every visitor automatically gets a private guest board. Create tasks, drag them between **To Do**, **In Progress**, **In Review**, and **Done**, and pick up where you left off after a refresh. Tasks are stored in Supabase and protected by PostgreSQL Row Level Security, so each guest can only ever read or change their own work.
 
 ## Features
@@ -114,7 +117,7 @@ docs/           VERIFICATION.md
 
 ## Verification
 
-[`docs/VERIFICATION.md`](docs/VERIFICATION.md) records what was tested and the actual results: 24/24 database isolation checks, 120 browser checks covering every feature and failure path, 11 date logic tests, and accessibility audits.
+[`docs/VERIFICATION.md`](docs/VERIFICATION.md) records what was tested and the actual results: 24/24 database isolation checks, 120 browser checks covering every feature and failure path (passing both locally and on the live site), 11 date logic tests, and accessibility audits.
 
 ## Known limitations
 
@@ -141,7 +144,7 @@ Built in small, reviewed steps.
 | 11 | Search and filtering | ✅ |
 | 12 | Usability and responsive polish | ✅ |
 | 13 | Verification and design pass | ✅ |
-| 14 | GitHub and hosting | In progress |
+| 14 | GitHub and hosting | ✅ |
 | 15 | Final assessment document | Not started |
 
 Approximate time: about 8 hours across steps 1–13, including design iterations and verification.
