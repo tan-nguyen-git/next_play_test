@@ -21,8 +21,8 @@ Status key: ⬜ pending · 🟡 implemented, pending review · ✅ approved
 
 | # | Task | Status |
 | --- | --- | --- |
-| 1 | Inspect and scaffold | 🟡 implemented, pending review |
-| 2 | Visual board with local sample data | ⬜ |
+| 1 | Inspect and scaffold | ✅ approved |
+| 2 | Visual board with local sample data | ✅ approved |
 | 3 | SQL schema and RLS policies | ⬜ |
 | 4 | Supabase client and guest sessions | ⬜ |
 | 5 | Load persisted board | ⬜ |
@@ -42,6 +42,7 @@ Status key: ⬜ pending · 🟡 implemented, pending review · ✅ approved
 | Task | Approx. time | Notes |
 | --- | --- | --- |
 | 1 | ~15 min | Scaffolded with create-vite (react-ts template), npm |
+| 2 | ~30 min | Board, columns, cards, design tokens, sample data |
 
 ## Open issues
 
