@@ -1,5 +1,5 @@
 {
-  "name": "kanban-task-board",
+  "name": "task-board",
   "private": true,
   "version": "1.0.0",
   "type": "module",
